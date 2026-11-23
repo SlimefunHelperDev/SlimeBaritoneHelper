@@ -1,0 +1,87 @@
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+}
+
+loom {
+    mixin {
+        useLegacyMixinAp = true
+        defaultRefmapName = 'slimefunbaritonefirework-refmap.json'
+    }
+
+    runs {
+        client {
+            vmArgs '-Dmixin.debug.export=true'
+        }
+    }
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'Fabric'
+        url = 'https://maven.fabricmc.net/'
+    }
+    maven {
+        name = 'JitPack'
+        url = 'https://jitpack.io'
+    }
+    maven {
+        url = 'https://repository.hanbings.io/proxy'
+    }
+}
+
+dependencies {
+    minecraft("com.mojang:minecraft:${project.minecraft_version}") {
+        transitive = false
+    }
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "com.github.m1919810:SlimefunHelper:${project.slimefunhelper_commit}"
+    modCompileOnly files('libs/baritone-meteor.jar')
+    modLocalRuntime files('libs/baritone-meteor.jar')
+    runtimeOnly files(layout.buildDirectory.file('generated/baritone-runtime/nether-pathfinder-1.4.1.jar'))
+}
+
+def extractBaritonePathfinder = tasks.register('extractBaritonePathfinder', Copy) {
+    from(zipTree('libs/baritone-meteor.jar')) {
+        include 'META-INF/jars/nether-pathfinder-1.4.1.jar'
+        eachFile { file -> file.path = file.name }
+        includeEmptyDirs = false
+    }
+    into(layout.buildDirectory.dir('generated/baritone-runtime'))
+}
+
+tasks.matching { it.name == 'runClient' }.configureEach {
+    dependsOn extractBaritonePathfinder
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', project.minecraft_version
+
+    filesMatching('fabric.mod.json') {
+        expand(
+                'version': project.version,
+                'minecraft_version': project.minecraft_version
+        )
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}

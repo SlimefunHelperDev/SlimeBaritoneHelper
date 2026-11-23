@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "slimefunbaritonefirework",
+  "version": "${version}",
+  "name": "BaritoneHelperPlugin",
+  "description": "Synchronizes Baritone elytra prediction with SlimefunHelper firework boosts.",
+  "authors": ["matl114"],
+  "environment": "client",
+  "entrypoints": {
+    "slimefunhelper": ["me.matl114.baritonefirework.BaritoneFireworkPlugin"]
+  },
+  "mixins": [
+    "slimefunbaritonefirework.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*",
+    "slimefunhelper": ">=1.2.2.1",
+    "baritone-meteor": "*"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "config.index.baritone-firework": "Baritone 烟花助推控制",
+  "config.index.glide-pose-fix": "滑翔姿态修复",
+  "config.index.control-fly": "直线飞行控制",
+  "config.index.control-fly.firework-motion": "烟花飞行控制",
+  "config.index.control-fly.flight-motion": "受控飞行控制",
+  "baritone-firework.enable": "启用烟花助推控制",
+  "baritone-firework.hotkey": "烟花助推控制快捷键",
+  "baritone-firework.near-target-fix-enable": "启用目标附近加速度修正",
+  "baritone-firework.near-target-fix-distance": "目标附近判定距离（方块）",
+  "glide-pose-fix.enable": "启用滑翔姿态修复",
+  "glide-pose-fix.hotkey": "滑翔姿态修复快捷键",
+  "control-fly.firework-motion.enable": "启用烟花飞行控制",
+  "control-fly.firework-motion.hotkey": "烟花飞行控制快捷键",
+  "control-fly.flight-motion.enable": "启用受控飞行寻路",
+  "control-fly.flight-motion.speed": "受控飞行速度",
+  "widget.click-gui.module-name.Baritone.BaritoneFirework": "BaritoneFirework",
+  "widget.click-gui.module-name.Baritone.BaritoneFirework.tooltips": "使 Baritone 的鞘翅预测与烟花助推保持同步",
+  "widget.click-gui.module-name.Baritone.GlidePoseFix": "GlidePoseFix",
+  "widget.click-gui.module-name.Baritone.GlidePoseFix.tooltips": "修正滑翔时的玩家姿态",
+  "widget.click-gui.module-name.Baritone.ControlFly": "ControlFly",
+  "widget.click-gui.module-name.Baritone.ControlFly.tooltips": "控制鞘翅朝选定目标直线飞行"
+}

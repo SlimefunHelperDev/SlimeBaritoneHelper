@@ -1,0 +1,88 @@
+说明：这是给开发者审阅/手动应用的建议补丁，不会修改源码。
+
+目标源码文件：src/main/java/baritone/process/elytra/ElytraBehavior.java
+
+假设 `tickSimulateFireworkVelocity` 已由你的魔改公式实现，并返回 Minecraft
+当前映射中的 `net.minecraft.world.phys.Vec3`。Baritone 当前版本没有 `Vec3d` 类型；
+若函数实现来自其他映射/模块，需要在边界处转换向量类型。
+
+本补丁只替换预测模拟期间“烟花助推速度递推”的位置，并保存模拟循环需要的
+前一 tick 状态。实际烟花发射阈值、计时、寻路和碰撞推进逻辑不变。
+
+--- a/src/main/java/baritone/process/elytra/ElytraBehavior.java
++++ b/src/main/java/baritone/process/elytra/ElytraBehavior.java
+@@
+         public final Vec3 start;
+         public final Vec3 motion;
+         public final AABB boundingBox;
+         public final boolean ignoreLava;
+         public final FireworkBoost boost;
+         public final IAimProcessor aimProcessor;
++        public final Rotation startRotation;
+@@
+             this.start = ctx.playerFeetAsVec();
+             this.motion = ctx.playerMotion();
+             this.boundingBox = ctx.player().getBoundingBox();
+             this.ignoreLava = ctx.player().isInLava();
++        // 快照必须与本次求解的起始速度/视角一致；异步求解会在构造时取得它。
++            this.startRotation = ctx.playerRotations();
+@@
+                     && Objects.equals(this.motion, other.motion)
+                     && Objects.equals(this.boundingBox, other.boundingBox)
+                     && this.ignoreLava == other.ignoreLava
++                    && Objects.equals(this.startRotation, other.startRotation)
+                     && Objects.equals(this.boost, other.boost);
+@@
+         Vec3 delta = goalDelta;
+         Vec3 motion = context.motion;
++        Vec3 lastVelocity = motion;
++        Rotation lastRotation = context.startRotation;
+         AABB hitbox = context.boundingBox;
+@@
+             final Vec3 lookDirection = RotationUtils.calcLookDirectionFromRotation(rotation);
+
+             motion = step(motion, lookDirection, rotation.getPitch());
+             delta = delta.subtract(motion);
+@@
+             displacement.add(displacement.get(displacement.size() - 1).add(motion));
+
+             if (i >= ticksBoostDelay && remainingTicksBoosted-- > 0) {
+-                // See EntityFireworkRocket
+-                motion = motion.add(
+-                        lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motion.x) * 0.5,
+-                        lookDirection.y * 0.1 + (lookDirection.y * 1.5 - motion.y) * 0.5,
+-                        lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motion.z) * 0.5
+-                );
++                motion = tickSimulateFireworkVelocity(
++                        lastVelocity,
++                        lastRotation.getPitch(), lastRotation.getYaw(),
++                        rotation.getPitch(), rotation.getYaw()
++                );
+             }
++            // 无论本 tick 是否处于助推期，下个 tick 的历史量都是本 tick
++            // 鞘翅 step 之后、烟花递推之前的状态，以及本 tick 实际采用的 rotation。
++            lastVelocity = motion;
++            lastRotation = rotation;
+         }
+
+         return displacement;
+     }
+
++    /**
++     * TODO: 在此处实现/接入自定义公式，或者改为调用其所属的 utility 类。
++     * 建议实现：tickSimulateFireworkVelocity(Vec3 lastVelocity, float lastPitch,
++     * float lastYaw, float currentTickPitch, float currentTickYaw)。
++     */
+
+注：若 `tickSimulateFireworkVelocity` 应在无助推 tick 也更新速度状态，请将其调用
+放到 `ticksBoostDelay` / `remainingTicksBoosted` 条件之外，并依据该公式定义重新确认
+运动顺序。上面的建议按文档所述“只替换烟花助推递推”处理。
+
+涉及文件：
+- `src/main/java/baritone/process/elytra/ElytraBehavior.java`：增加起始视角快照，
+  并在 `simulate` 中将现有烟花速度递推替换为新公式调用。
+- `docs/elytra-control.md`：已有改造指南；若最终实现的参数时序或公式语义与此补丁
+  不同，应同步更新该文档。此补丁本身不修改该 Markdown 文件。
+
+实现注意：补丁中的 TODO 是接入点提示，不是可直接编译的声明；方法体/归属类需要
+按你的新公式补齐。保留现有碰撞检查及位移累计顺序，避免重复推进 hitbox 或 displacement。

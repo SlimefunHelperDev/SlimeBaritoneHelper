@@ -1,0 +1,6 @@
+baritone-firework:
+  enable: false
+  near-target-fix-enable: false
+  near-target-fix-distance: 1.0
+glide-pose-fix:
+  enable: false

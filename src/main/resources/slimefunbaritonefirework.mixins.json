@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.matl114.baritonefirework.mixin",
+  "refmap": "slimefunbaritonefirework-refmap.json",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ElytraBehaviorMixin",
+    "ElytraBehaviorAccessor",
+    "ElytraProcessMixin",
+    "ElytraProcessAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
